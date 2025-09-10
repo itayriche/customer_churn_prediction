@@ -1,0 +1,405 @@
+"""
+Web utility functions for the Streamlit Customer Churn Prediction app.
+
+This module provides helper functions for:
+- Model loading and caching
+- Data processing for web interface
+- UI components and styling
+- File operations
+- Visualization helpers
+"""
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
+import glob
+import os
+from pathlib import Path
+from typing import Dict, List, Any, Optional, Tuple
+import plotly.graph_objects as go
+import plotly.express as px
+from datetime import datetime
+import base64
+
+# Import project modules
+from src.config import MODEL_SAVE_PATH, CATEGORICAL_FEATURES, NUMERICAL_FEATURES, DATA_PATH
+from src.data_preprocessing import clean_data
+
+@st.cache_data
+def load_and_cache_data() -> pd.DataFrame:
+    """Load and cache the dataset."""
+    try:
+        df = pd.read_csv(DATA_PATH)
+        df_cleaned = clean_data(df)
+        return df_cleaned
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        return pd.DataFrame()
+
+@st.cache_resource
+def load_models() -> Dict[str, Any]:
+    """Load and cache all available trained models."""
+    models = {}
+    model_files = glob.glob(os.path.join(MODEL_SAVE_PATH, "*.joblib"))
+    
+    for model_file in model_files:
+        try:
+            model_name = Path(model_file).stem
+            # Extract model type from filename (before timestamp)
+            model_type = model_name.split('_')[0] + '_' + model_name.split('_')[1] if '_' in model_name else model_name
+            models[model_type] = joblib.load(model_file)
+        except Exception as e:
+            st.warning(f"Could not load model {model_file}: {str(e)}")
+    
+    return models
+
+def get_model_list() -> List[str]:
+    """Get list of available model names."""
+    try:
+        models = load_models()
+        return list(models.keys())
+    except:
+        return []
+
+def set_page_config():
+    """Set Streamlit page configuration."""
+    st.set_page_config(
+        page_title="Customer Churn Prediction",
+        page_icon="🎯",
+        layout="wide",
+        initial_sidebar_state="expanded",
+        menu_items={
+            'Get Help': 'https://github.com/itayriche/customer_churn_prediction',
+            'Report a bug': 'https://github.com/itayriche/customer_churn_prediction/issues',
+            'About': "# Customer Churn Prediction App\nBuilt with Streamlit for machine learning model deployment."
+        }
+    )
+
+def load_custom_css():
+    """Load custom CSS styling."""
+    css = """
+    <style>
+    /* Main styling */
+    .main {
+        padding-top: 2rem;
+    }
+    
+    /* Sidebar styling */
+    .css-1d391kg {
+        background-color: #f0f2f6;
+    }
+    
+    /* Metrics styling */
+    .metric-container {
+        background-color: white;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin: 0.5rem 0;
+    }
+    
+    /* Risk level styling */
+    .risk-low {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border-left: 4px solid #28a745;
+    }
+    
+    .risk-medium {
+        background-color: #fff3cd;
+        color: #856404;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border-left: 4px solid #ffc107;
+    }
+    
+    .risk-high {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        border-left: 4px solid #dc3545;
+    }
+    
+    /* Button styling */
+    .stButton > button {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.5rem 1rem;
+        font-weight: 600;
+    }
+    
+    .stButton > button:hover {
+        background-color: #0056b3;
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+    }
+    
+    /* Success/Error message styling */
+    .stSuccess {
+        background-color: #d1ecf1;
+        border-color: #bee5eb;
+    }
+    
+    .stError {
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+    
+    /* Progress bar styling */
+    .stProgress > div > div {
+        background-color: #007bff;
+    }
+    
+    /* Selectbox styling */
+    .stSelectbox > div > div {
+        background-color: white;
+    }
+    
+    /* Custom classes */
+    .prediction-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 1rem;
+        margin: 1rem 0;
+    }
+    
+    .feature-importance {
+        background-color: #f8f9fa;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid #dee2e6;
+    }
+    </style>
+    """
+    st.markdown(css, unsafe_allow_html=True)
+
+def get_risk_category(probability: float) -> Tuple[str, str, str]:
+    """
+    Determine risk category based on churn probability.
+    
+    Args:
+        probability: Churn probability (0-1)
+        
+    Returns:
+        Tuple of (category, color, emoji)
+    """
+    if probability < 0.3:
+        return "Low Risk", "#28a745", "🟢"
+    elif probability < 0.7:
+        return "Medium Risk", "#ffc107", "🟡"
+    else:
+        return "High Risk", "#dc3545", "🔴"
+
+def format_probability(prob: float) -> str:
+    """Format probability as percentage."""
+    return f"{prob * 100:.1f}%"
+
+def create_probability_gauge(probability: float) -> go.Figure:
+    """Create a probability gauge chart."""
+    category, color, _ = get_risk_category(probability)
+    
+    fig = go.Figure(go.Indicator(
+        mode = "gauge+number+delta",
+        value = probability * 100,
+        domain = {'x': [0, 1], 'y': [0, 1]},
+        title = {'text': "Churn Probability"},
+        delta = {'reference': 50},
+        gauge = {
+            'axis': {'range': [None, 100]},
+            'bar': {'color': color},
+            'steps': [
+                {'range': [0, 30], 'color': "lightgray"},
+                {'range': [30, 70], 'color': "gray"},
+                {'range': [70, 100], 'color': "darkgray"}
+            ],
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': 90
+            }
+        }
+    ))
+    
+    fig.update_layout(
+        height=300,
+        font={'color': "darkblue", 'family': "Arial"},
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)"
+    )
+    
+    return fig
+
+def create_feature_importance_chart(feature_names: List[str], 
+                                  importance_values: List[float], 
+                                  title: str = "Feature Importance") -> go.Figure:
+    """Create a horizontal bar chart for feature importance."""
+    # Sort features by importance
+    sorted_data = sorted(zip(feature_names, importance_values), key=lambda x: x[1], reverse=True)
+    sorted_features, sorted_importance = zip(*sorted_data)
+    
+    fig = go.Figure(go.Bar(
+        x=sorted_importance[:10],  # Top 10 features
+        y=sorted_features[:10],
+        orientation='h',
+        marker_color='rgba(55, 128, 191, 0.7)',
+        marker_line_color='rgba(55, 128, 191, 1.0)',
+        marker_line_width=1
+    ))
+    
+    fig.update_layout(
+        title=title,
+        xaxis_title="Importance Score",
+        yaxis_title="Features",
+        height=400,
+        margin=dict(l=150, r=50, t=50, b=50)
+    )
+    
+    return fig
+
+def create_prediction_summary_card(prediction: int, 
+                                 probability: float, 
+                                 model_name: str) -> str:
+    """Create a prediction summary card in HTML."""
+    category, color, emoji = get_risk_category(probability)
+    prediction_label = "Will Churn" if prediction == 1 else "Will Stay"
+    
+    card_html = f"""
+    <div class="prediction-container">
+        <h2>{emoji} Prediction Result</h2>
+        <h3>{prediction_label}</h3>
+        <p><strong>Churn Probability:</strong> {format_probability(probability)}</p>
+        <p><strong>Risk Level:</strong> {category}</p>
+        <p><strong>Model Used:</strong> {model_name.replace('_', ' ').title()}</p>
+    </div>
+    """
+    
+    return card_html
+
+def validate_input_data(data: Dict[str, Any]) -> Tuple[bool, List[str]]:
+    """
+    Validate input data for prediction.
+    
+    Args:
+        data: Dictionary of input features
+        
+    Returns:
+        Tuple of (is_valid, error_messages)
+    """
+    errors = []
+    
+    # Check for required numerical features
+    for feature in NUMERICAL_FEATURES:
+        if feature not in data or data[feature] is None:
+            errors.append(f"Missing required field: {feature}")
+        elif not isinstance(data[feature], (int, float)):
+            try:
+                float(data[feature])
+            except (ValueError, TypeError):
+                errors.append(f"Invalid number format for {feature}")
+    
+    # Check for required categorical features
+    for feature in CATEGORICAL_FEATURES:
+        if feature not in data or data[feature] is None:
+            errors.append(f"Missing required field: {feature}")
+    
+    # Business logic validation
+    if 'tenure' in data and data['tenure'] is not None:
+        if data['tenure'] < 0 or data['tenure'] > 100:
+            errors.append("Tenure should be between 0 and 100 months")
+    
+    if 'MonthlyCharges' in data and data['MonthlyCharges'] is not None:
+        if data['MonthlyCharges'] < 0 or data['MonthlyCharges'] > 200:
+            errors.append("Monthly charges should be between $0 and $200")
+    
+    return len(errors) == 0, errors
+
+def download_button(data: pd.DataFrame, filename: str, label: str = "Download CSV"):
+    """Create a download button for DataFrame."""
+    csv = data.to_csv(index=False)
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="{filename}">{label}</a>'
+    st.markdown(href, unsafe_allow_html=True)
+
+def display_model_metrics(metrics: Dict[str, float]):
+    """Display model performance metrics in a formatted way."""
+    col1, col2, col3, col4 = st.columns(4)
+    
+    with col1:
+        st.metric("Accuracy", f"{metrics.get('accuracy', 0):.3f}")
+    
+    with col2:
+        st.metric("Precision", f"{metrics.get('precision', 0):.3f}")
+    
+    with col3:
+        st.metric("Recall", f"{metrics.get('recall', 0):.3f}")
+    
+    with col4:
+        st.metric("F1-Score", f"{metrics.get('f1', 0):.3f}")
+
+def create_confusion_matrix_heatmap(cm: np.ndarray, labels: List[str] = None) -> go.Figure:
+    """Create a confusion matrix heatmap."""
+    if labels is None:
+        labels = ['No Churn', 'Churn']
+    
+    fig = go.Figure(data=go.Heatmap(
+        z=cm,
+        x=labels,
+        y=labels,
+        colorscale='Blues',
+        text=cm,
+        texttemplate="%{text}",
+        textfont={"size": 20},
+    ))
+    
+    fig.update_layout(
+        title="Confusion Matrix",
+        xaxis_title="Predicted",
+        yaxis_title="Actual",
+        width=400,
+        height=400
+    )
+    
+    return fig
+
+def show_loading_spinner(message: str = "Processing..."):
+    """Show a loading spinner with message."""
+    return st.spinner(message)
+
+def format_currency(amount: float) -> str:
+    """Format amount as currency."""
+    return f"${amount:,.2f}"
+
+def get_sample_customer_data() -> Dict[str, Any]:
+    """Get sample customer data for demonstration."""
+    return {
+        'gender': 'Female',
+        'SeniorCitizen': 'No',
+        'Partner': 'Yes',
+        'Dependents': 'No',
+        'tenure': 24,
+        'PhoneService': 'Yes',
+        'MultipleLines': 'No',
+        'InternetService': 'Fiber optic',
+        'OnlineSecurity': 'No',
+        'OnlineBackup': 'Yes',
+        'DeviceProtection': 'No',
+        'TechSupport': 'No',
+        'StreamingTV': 'No',
+        'StreamingMovies': 'No',
+        'Contract': 'Month-to-month',
+        'PaperlessBilling': 'Yes',
+        'PaymentMethod': 'Electronic check',
+        'MonthlyCharges': 70.85,
+        'TotalCharges': 1701.0
+    }
