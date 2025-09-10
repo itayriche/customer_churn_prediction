@@ -1,0 +1,39 @@
+# Web Application Dependencies for Customer Churn Prediction
+
+# Core ML dependencies (from base requirements.txt)
+pandas>=1.5.0
+numpy>=1.21.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+scikit-learn>=1.1.0
+xgboost>=1.6.0
+joblib>=1.1.0
+shap>=0.41.0
+
+# Web framework and UI
+streamlit>=1.49.0
+plotly>=6.0.0
+altair>=5.0.0
+
+# Additional visualization and UI enhancements
+streamlit-option-menu>=0.3.0
+streamlit-aggrid>=0.3.0
+streamlit-plotly-events>=0.0.6
+
+# Data processing and utilities
+python-dateutil>=2.8.0
+pytz>=2021.1
+typing-extensions>=4.0.0
+
+# File handling and exports
+openpyxl>=3.0.0
+xlsxwriter>=3.0.0
+reportlab>=4.0.0
+
+# Caching and performance
+streamlit-lottie>=0.0.3
+streamlit-metrics>=0.1.0
+
+# Development and testing
+pytest>=7.0.0
+pytest-streamlit>=0.1.0
