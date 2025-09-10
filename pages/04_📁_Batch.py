@@ -19,7 +19,7 @@ import base64
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES
-from utils.web_utils import (
+from webutils.web_utils import (
     load_models, load_custom_css, get_risk_category, 
     format_probability, validate_input_data, show_loading_spinner
 )

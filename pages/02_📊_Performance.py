@@ -23,7 +23,7 @@ from sklearn.model_selection import cross_val_score
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, RANDOM_STATE, TEST_SIZE
-from utils.web_utils import (
+from webutils.web_utils import (
     load_models, load_and_cache_data, load_custom_css,
     display_model_metrics, create_confusion_matrix_heatmap,
     create_feature_importance_chart

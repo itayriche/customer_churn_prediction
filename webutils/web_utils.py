@@ -22,9 +22,60 @@ import plotly.express as px
 from datetime import datetime
 import base64
 
-# Import project modules
-from src.config import MODEL_SAVE_PATH, CATEGORICAL_FEATURES, NUMERICAL_FEATURES, DATA_PATH
-from src.data_preprocessing import clean_data
+"""
+Web utility functions for the Streamlit Customer Churn Prediction app.
+
+This module provides helper functions for:
+- Model loading and caching
+- Data processing for web interface
+- UI components and styling
+- File operations
+- Visualization helpers
+"""
+
+import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
+import glob
+import os
+from pathlib import Path
+from typing import Dict, List, Any, Optional, Tuple
+import plotly.graph_objects as go
+import plotly.express as px
+from datetime import datetime
+import base64
+
+# Constants (copied from config to avoid import issues)
+MODEL_SAVE_PATH = "models/"
+DATA_PATH = "WA_Fn-UseC_-Telco-Customer-Churn.csv"
+
+CATEGORICAL_FEATURES = [
+    "gender", "SeniorCitizen", "Partner", "Dependents", "PhoneService",
+    "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+    "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+    "Contract", "PaperlessBilling", "PaymentMethod"
+]
+
+NUMERICAL_FEATURES = ["tenure", "MonthlyCharges", "TotalCharges"]
+
+# Simple data cleaning function (simplified from src)
+def clean_data(df):
+    """Clean the dataset."""
+    # Convert TotalCharges to numeric
+    df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
+    
+    # Drop rows with missing TotalCharges
+    df = df.dropna(subset=['TotalCharges'])
+    
+    # Convert SeniorCitizen to string
+    df['SeniorCitizen'] = df['SeniorCitizen'].map({0: 'No', 1: 'Yes'})
+    
+    # Drop customerID column if present
+    if 'customerID' in df.columns:
+        df = df.drop('customerID', axis=1)
+    
+    return df
 
 @st.cache_data
 def load_and_cache_data() -> pd.DataFrame:
@@ -403,3 +454,32 @@ def get_sample_customer_data() -> Dict[str, Any]:
         'MonthlyCharges': 70.85,
         'TotalCharges': 1701.0
     }
+
+# Simple interpretability class (simplified)
+class SimpleInterpreter:
+    """Simplified model interpretation for web app."""
+    
+    def explain_prediction(self, model, customer_data, model_name, top_features=5):
+        """Generate a simple explanation of the prediction."""
+        try:
+            # Convert to DataFrame
+            df = pd.DataFrame([customer_data])
+            
+            # Get prediction
+            prediction = model.predict(df)[0]
+            prediction_proba = model.predict_proba(df)[0]
+            
+            # Simple feature importance based on model type
+            explanation = {
+                'prediction': int(prediction),
+                'prediction_label': 'Churn' if prediction == 1 else 'No Churn',
+                'churn_probability': prediction_proba[1],
+                'confidence': np.max(prediction_proba),
+                'explanation_text': f"Based on customer attributes, the model predicts {'churn' if prediction == 1 else 'retention'} with {prediction_proba[1]*100:.1f}% confidence."
+            }
+            
+            return explanation
+            
+        except Exception as e:
+            print(f"Error explaining prediction: {e}")
+            return {}

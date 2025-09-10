@@ -21,7 +21,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
 from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES
-from utils.web_utils import load_and_cache_data, load_custom_css, load_models
+from webutils.web_utils import load_and_cache_data, load_custom_css, load_models
 
 def create_churn_distribution():
     """Create churn distribution visualization."""

@@ -28,10 +28,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent / 'src'))
 
 # Import project modules
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, TARGET_COLUMN
-from utils.web_utils import (
+from webutils.web_utils import (
     load_models, get_model_list, load_and_cache_data,
-    set_page_config, load_custom_css
+    set_page_config, load_custom_css, CATEGORICAL_FEATURES, NUMERICAL_FEATURES
 )
 
 def main():
@@ -45,7 +44,6 @@ def main():
     
     # Sidebar for navigation and model selection
     with st.sidebar:
-        st.image("static/images/logo.png", width=150)
         st.title("🎯 Churn Predictor")
         st.markdown("---")
         

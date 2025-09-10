@@ -15,14 +15,13 @@ from pathlib import Path
 # Add src directory to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES
-from utils.web_utils import (
+from webutils.web_utils import (
     load_models, load_custom_css, get_risk_category, 
     format_probability, create_probability_gauge,
     create_prediction_summary_card, validate_input_data,
-    get_sample_customer_data, show_loading_spinner
+    get_sample_customer_data, show_loading_spinner,
+    CATEGORICAL_FEATURES, NUMERICAL_FEATURES, SimpleInterpreter
 )
-from src.interpretability import ModelInterpreter
 
 def create_input_form():
     """Create the customer data input form."""
@@ -226,16 +225,13 @@ def make_prediction(customer_data, model, model_name):
         }
 
 def explain_prediction(customer_data, model, model_name):
-    """Generate prediction explanation using SHAP."""
+    """Generate prediction explanation using simplified interpreter."""
     try:
         # Initialize interpreter
-        interpreter = ModelInterpreter()
-        
-        # Convert to DataFrame
-        df = pd.DataFrame([customer_data])
+        interpreter = SimpleInterpreter()
         
         # Get explanation
-        explanation = interpreter.explain_prediction(model, df, model_name)
+        explanation = interpreter.explain_prediction(model, customer_data, model_name)
         
         return explanation
     
@@ -270,13 +266,13 @@ def main():
         if st.button("📝 Use Sample Data", help="Fill form with sample customer data"):
             sample_data = get_sample_customer_data()
             st.session_state.update(sample_data)
-            st.experimental_rerun()
+            st.rerun()
     
     with col2:
         if st.button("🔄 Clear Form", help="Reset all fields"):
             for key in st.session_state.keys():
                 del st.session_state[key]
-            st.experimental_rerun()
+            st.rerun()
     
     with col3:
         st.markdown("")  # Spacer
