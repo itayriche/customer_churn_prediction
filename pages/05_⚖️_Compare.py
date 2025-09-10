@@ -274,16 +274,18 @@ def create_confusion_matrices_comparison(comparison_data, selected_models):
     for i, model_name in enumerate(selected_models):
         if model_name in comparison_data:
             cm = comparison_data[model_name]['confusion_matrix']
+            # Flip the confusion matrix vertically to correct orientation
+            cm_flipped = np.flipud(cm)
             row = i // cols + 1
             col = i % cols + 1
             
             fig.add_trace(
                 go.Heatmap(
-                    z=cm,
+                    z=cm_flipped,
                     x=['No Churn', 'Churn'],
-                    y=['No Churn', 'Churn'],
+                    y=['Churn', 'No Churn'],
                     colorscale='Blues',
-                    text=cm,
+                    text=cm_flipped,
                     texttemplate="%{text}",
                     textfont={"size": 14},
                     showscale=(i == 0)  # Only show scale for first matrix

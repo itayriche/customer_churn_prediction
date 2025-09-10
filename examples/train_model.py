@@ -31,7 +31,7 @@ from src.utils import (
     calculate_business_impact, print_section_header, format_duration
 )
 from src.config import RANDOM_STATE
-
+from src.config import PRIMARY_METRIC
 
 def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True) -> None:
     """
@@ -102,12 +102,12 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         
         # Perform cross-validation
         print("\nPerforming cross-validation...")
-        cv_scores = trainer.perform_cross_validation(X_train, y_train, scoring='roc_auc')
-        
+        cv_scores = trainer.perform_cross_validation(X_train, y_train, scoring=PRIMARY_METRIC)
+
         print(f"✓ Model training completed in {format_duration(time.time() - phase_start)}")
         
         # ========================
-        # PHASE 4: HYPERPARAMETER TUNING (Optional)
+        # PHASE 4: HYPERPARAMETER TUNING 
         # ========================
         if perform_tuning:
             print_section_header("PHASE 4: HYPERPARAMETER TUNING")
@@ -115,7 +115,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
             phase_start = time.time()
             
             # Select top models for tuning based on cross-validation
-            top_models = sorted(cv_scores.items(), key=lambda x: x[1]['mean'], reverse=True)[:3]
+            top_models = sorted(cv_scores.items(), key=lambda x: x[1]['mean'], reverse=True)[:5]
             top_model_names = [name for name, _ in top_models]
             
             print(f"Tuning top {len(top_model_names)} models: {top_model_names}")
@@ -123,7 +123,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
             tuning_results = trainer.hyperparameter_tuning(
                 X_train, y_train, 
                 model_names=top_model_names,
-                scoring='roc_auc'
+                scoring= PRIMARY_METRIC
             )
             
             print(f"✓ Hyperparameter tuning completed in {format_duration(time.time() - phase_start)}")
@@ -148,7 +148,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         print("\nDetailed Model Reports:")
         print("=" * 60)
         
-        best_models = comparison_df.head(3)['Model'].tolist()
+        best_models = comparison_df.head(5)['Model'].tolist()
         for model_name in best_models:
             print(evaluator.generate_model_report(model_name))
         
@@ -188,7 +188,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
             
             phase_start = time.time()
             
-            # Save top 3 models
+            # Save top 5 models
             top_models_to_save = best_models
             saved_paths = trainer.save_models(top_models_to_save)
             
@@ -211,11 +211,11 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         if perform_tuning:
             print(f"Models tuned: {len(trainer.best_models)}")
         
-        best_model = evaluator.get_best_model('roc_auc')
+        best_model = evaluator.get_best_model(PRIMARY_METRIC)
         if best_model:
-            best_score = evaluator.evaluation_results[best_model]['metrics']['roc_auc']
-            print(f"Best model: {best_model} (ROC AUC: {best_score:.4f})")
-        
+            best_score = evaluator.evaluation_results[best_model]['metrics'][PRIMARY_METRIC]
+            print(f"Best model: {best_model} ({PRIMARY_METRIC}: {best_score:.4f})")
+
         print("\n🎉 Training pipeline completed successfully!")
         
     except Exception as e:

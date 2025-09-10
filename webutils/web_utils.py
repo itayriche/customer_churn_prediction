@@ -399,16 +399,19 @@ def display_model_metrics(metrics: Dict[str, float]):
         st.metric("F1-Score", f"{metrics.get('f1', 0):.3f}")
 
 def create_confusion_matrix_heatmap(cm: np.ndarray, labels: List[str] = None) -> go.Figure:
-    """Create a confusion matrix heatmap."""
+    """Create a confusion matrix heatmap with correct orientation."""
     if labels is None:
         labels = ['No Churn', 'Churn']
     
+    # Flip the confusion matrix vertically to correct orientation
+    cm_flipped = np.flipud(cm)
+    
     fig = go.Figure(data=go.Heatmap(
-        z=cm,
+        z=cm_flipped,
         x=labels,
-        y=labels,
+        y=labels[::-1],  # Reverse y-labels to match flipped matrix
         colorscale='Blues',
-        text=cm,
+        text=cm_flipped,
         texttemplate="%{text}",
         textfont={"size": 20},
     ))
@@ -418,7 +421,9 @@ def create_confusion_matrix_heatmap(cm: np.ndarray, labels: List[str] = None) ->
         xaxis_title="Predicted",
         yaxis_title="Actual",
         width=400,
-        height=400
+        height=400,
+        # Fix y-axis to prevent auto-reverse
+        yaxis=dict(autorange=True)
     )
     
     return fig

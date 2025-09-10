@@ -15,7 +15,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 from .config import FIGURE_SIZE, COLORS
-
+from .config import PRIMARY_METRIC
 
 class ModelEvaluator:
     """Class for evaluating machine learning models."""
@@ -134,7 +134,7 @@ class ModelEvaluator:
             
             cm = results['confusion_matrix']
             sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
-            ax.set_title(f'{name}\nAccuracy: {results["metrics"]["accuracy"]:.3f}')
+            ax.set_title(f'{name}\n{PRIMARY_METRIC.capitalize()}: {results["metrics"][PRIMARY_METRIC]:.3f}')
             ax.set_xlabel('Predicted')
             ax.set_ylabel('Actual')
         
@@ -409,10 +409,10 @@ def evaluate_models_comprehensive(models: Dict[str, Pipeline],
         print(comparison_df.round(4))
         
         # Get best model
-        best_model = evaluator.get_best_model('roc_auc')
+        best_model = evaluator.get_best_model(PRIMARY_METRIC)
         if best_model:
-            print(f"\nBest performing model (ROC AUC): {best_model}")
-    
+            print(f"\nBest performing model ({PRIMARY_METRIC}): {best_model}")
+
     if show_plots:
         # Plot comparisons
         evaluator.plot_model_comparison(comparison_df)

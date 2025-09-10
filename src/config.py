@@ -24,8 +24,9 @@ MODELS_CONFIG: Dict[str, Any] = {
         "params": {"random_state": RANDOM_STATE, "n_estimators": 100},
         "hyperparameters": {
             "n_estimators": [50, 100, 200],
-            "max_depth": [None, 10, 20, 30],
-            "min_samples_split": [2, 5, 10]
+            "max_depth": [None, 4, 6, 8, 10],
+            "min_samples_split": [2, 5, 10],
+            "min_samples_leaf": [10, 20, 30]
         }
     },
     "svm": {
@@ -50,9 +51,9 @@ MODELS_CONFIG: Dict[str, Any] = {
         "class_name": "DecisionTreeClassifier",
         "params": {"random_state": RANDOM_STATE},
         "hyperparameters": {
-            "max_depth": [None, 10, 20, 30],
+            "max_depth": [None, 4, 6, 8, 10],
             "min_samples_split": [2, 5, 10],
-            "min_samples_leaf": [1, 2, 4]
+            "min_samples_leaf": [10, 20, 30]
         }
     },
     "gradient_boosting": {
@@ -94,7 +95,8 @@ PLOT_STYLE = 'seaborn-v0_8'
 
 # Cross-validation configuration
 CV_FOLDS = 5
-SCORING_METRICS = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc']
+SCORING_METRICS = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc', 'average_precision']
+PRIMARY_METRIC = 'recall'
 
 # Ensure model directory exists
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)

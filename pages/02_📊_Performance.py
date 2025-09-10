@@ -22,7 +22,7 @@ from sklearn.model_selection import cross_val_score
 # Add src directory to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, RANDOM_STATE, TEST_SIZE
+from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PRIMARY_METRIC, RANDOM_STATE, TEST_SIZE
 from webutils.web_utils import (
     load_models, load_and_cache_data, load_custom_css,
     display_model_metrics, create_confusion_matrix_heatmap,
@@ -280,11 +280,11 @@ def main():
     )
     
     # Best model highlight
-    best_model_idx = metrics_df['ROC AUC'].idxmax()
+    best_model_idx = metrics_df['Recall'].idxmax()
     best_model = metrics_df.iloc[best_model_idx]['Model']
-    best_auc = metrics_df.iloc[best_model_idx]['ROC AUC']
+    best_auc = metrics_df.iloc[best_model_idx]['Recall']
     
-    st.success(f"🏆 **Best Model:** {best_model} with ROC AUC of {best_auc:.3f}")
+    st.success(f"🏆 **Best Model:** {best_model} with Recall of {best_auc:.3f}")
     
     # Performance visualizations
     st.subheader("📊 Performance Visualizations")
