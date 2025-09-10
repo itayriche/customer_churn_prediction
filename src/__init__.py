@@ -11,5 +11,6 @@ from . import data_preprocessing
 from . import model_training
 from . import evaluation
 from . import utils
+from . import interpretability
 
-__all__ = ["config", "data_preprocessing", "model_training", "evaluation", "utils"]
+__all__ = ["config", "data_preprocessing", "model_training", "evaluation", "utils", "interpretability"]
