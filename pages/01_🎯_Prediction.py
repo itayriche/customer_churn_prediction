@@ -238,6 +238,49 @@ def explain_prediction(customer_data, model, model_name):
     except Exception as e:
         st.warning(f"Could not generate explanation: {str(e)}")
         return {}
+    
+def display_prediction_explanation(explanation):
+    """Display prediction explanation in the UI."""
+    if not explanation:
+        return
+    
+    st.subheader("🔍 Prediction Explanation")
+    
+    # Summary
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric(
+            "Churn Probability", 
+            f"{explanation['churn_probability']*100:.1f}%",
+            delta=f"{explanation['risk_level']}"
+        )
+    with col2:
+        st.metric(
+            "Stay Probability",
+            f"{explanation['stay_probability']*100:.1f}%",
+            delta="Confidence"
+        )
+    
+    # Summary text
+    st.info(explanation['summary_text'])
+    
+    # Feature explanations
+    if explanation.get('feature_explanations'):
+        st.subheader("📊 Top Contributing Factors")
+        
+        for feat_exp in explanation['feature_explanations'][:5]:
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"• {feat_exp['explanation']}")
+            with col2:
+                importance_bar = "█" * int(abs(feat_exp['importance']) * 50)
+                st.write(f"`{importance_bar}`")
+    
+    # Recommendations
+    if explanation.get('recommendations'):
+        st.subheader("💡 Recommendations")
+        for rec in explanation['recommendations']:
+            st.write(f"• {rec}")
 
 def main():
     load_custom_css()
@@ -298,20 +341,21 @@ def main():
             
             # Make prediction
             with show_loading_spinner("Making prediction..."):
+
                 result = make_prediction(customer_data, selected_model, selected_model_name)
-            
-            if result['success']:
-                # Store results in session state
-                st.session_state['last_prediction'] = result
-                st.session_state['last_customer_data'] = customer_data
-                st.session_state['last_model_name'] = selected_model_name
                 
-                # Display results
-                st.success("✅ Prediction completed successfully!")
-                
-            else:
-                st.error(f"❌ Prediction failed: {result['error']}")
-    
+                if result['success']:
+                    # Store results in session state
+                    st.session_state['last_prediction'] = result
+                    st.session_state['last_customer_data'] = customer_data
+                    st.session_state['last_model_name'] = selected_model_name
+
+                    # Display results
+                    st.success("✅ Prediction completed successfully!")
+
+                else:
+                    st.error("❌ Prediction failed.")
+
     with col2:
         if st.button("ℹ️ Model Info", use_container_width=True):
             with st.expander("Model Details", expanded=True):
@@ -385,29 +429,16 @@ def main():
         
         # Explanation section
         with st.expander("🔍 Prediction Explanation", expanded=False):
-            explanation = explain_prediction(
-                customer_data, 
-                models[model_name], 
-                model_name
-            )
-            
-            if explanation:
-                st.write("**Key factors influencing this prediction:**")
+            st.markdown("Understanding the factors influencing this prediction.")
+            if result['success']:
+                # Generate and display explanation
+                with show_loading_spinner("Generating explanation..."):
+                    explanation = explain_prediction(customer_data, selected_model, selected_model_name)
                 
-                if 'top_contributions' in explanation:
-                    for contrib in explanation['top_contributions'][:5]:
-                        feature = contrib['feature']
-                        shap_value = contrib['shap_value']
-                        feature_value = contrib['feature_value']
-                        
-                        impact = "increases" if shap_value > 0 else "decreases"
-                        st.write(f"• **{feature}** (value: {feature_value:.3f}) {impact} churn likelihood")
-                
-                if 'explanation_text' in explanation:
-                    st.write("**Summary:**")
-                    st.write(explanation['explanation_text'])
+                if explanation:
+                    display_prediction_explanation(explanation)
             else:
-                st.info("Prediction explanation not available for this model.")
+                st.warning("⚠️ Could not generate explanation for this prediction.")
         
         # Business impact section
         with st.expander("💰 Business Impact Analysis"):
