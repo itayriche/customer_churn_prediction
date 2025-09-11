@@ -115,7 +115,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
             phase_start = time.time()
             
             # Select top models for tuning based on cross-validation
-            top_models = sorted(cv_scores.items(), key=lambda x: x[1]['mean'], reverse=True)[:5]
+            top_models = sorted(cv_scores.items(), key=lambda x: x[1]['mean'], reverse=True)
             top_model_names = [name for name, _ in top_models]
             
             print(f"Tuning top {len(top_model_names)} models: {top_model_names}")
@@ -148,7 +148,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         print("\nDetailed Model Reports:")
         print("=" * 60)
         
-        best_models = comparison_df.head(5)['Model'].tolist()
+        best_models = comparison_df['Model'].tolist()
         for model_name in best_models:
             print(evaluator.generate_model_report(model_name))
         
