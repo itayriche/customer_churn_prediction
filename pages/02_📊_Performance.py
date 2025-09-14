@@ -19,11 +19,11 @@ from pathlib import Path
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
-
+import joblib
 # Add src directory to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PRIMARY_METRIC, RANDOM_STATE, TEST_SIZE, CV_FOLDS
+from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PRIMARY_METRIC, RANDOM_STATE, TEST_SIZE, CV_FOLDS, PROBABILITY_THRESHOLD
 from webutils.web_utils import (
     load_models, load_and_cache_data, load_custom_css,
     display_model_metrics, create_confusion_matrix_heatmap,
@@ -37,25 +37,10 @@ def evaluate_all_models():
     """Evaluate all loaded models using the same preprocessing pipeline from training."""
     try:
         # Load data
-        df = load_and_cache_data()
-        if df.empty:
-            return {}
-        
-        # Prepare data EXACTLY as in training
-        X = df.drop('Churn', axis=1)
-        y = df['Churn'].map({'No': 0, 'Yes': 1})
-        
-        # ✅ Use the SAME split as in training (same random state)
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
-        )
-        
-        # ✅ Create the SAME preprocessor as in training
-        preprocessor = create_preprocessor()
-        
-        # ✅ Fit preprocessor ONLY on training data
-        X_train_processed = preprocessor.fit_transform(X_train)
-        X_test_processed = preprocessor.transform(X_test)  # Only transform, don't fit!
+        out_path = os.path.join("data/", f"splits.joblib")
+        bundle = joblib.load(out_path)
+        X_train, X_test = bundle["X_train"], bundle["X_test"]
+        y_train, y_test = bundle["y_train"], bundle["y_test"]
         
         # Load models
         models = load_models()
@@ -69,13 +54,13 @@ def evaluate_all_models():
                     #y_pred = model.predict(X_test)
                     y_pred_proba = model.predict_proba(X_test)[:, 1]
                     # Thresholding
-                    y_pred = (y_pred_proba >= 0.4).astype(int)
+                    y_pred = (y_pred_proba >= PROBABILITY_THRESHOLD).astype(int)
                 else:
                     # Model is just the classifier - use preprocessed data
                     #y_pred = model.predict(X_test_processed)
-                    y_pred_proba = model.predict_proba(X_test_processed)[:, 1]
+                    y_pred_proba = model.predict_proba(X_test)[:, 1]
                     # Thresholding
-                    y_pred = (y_pred_proba >= 0.4).astype(int)
+                    y_pred = (y_pred_proba >= PROBABILITY_THRESHOLD).astype(int)
 
                 # Compute metrics
                 accuracy = accuracy_score(y_test, y_pred)
@@ -94,7 +79,7 @@ def evaluate_all_models():
                 if hasattr(model, 'named_steps'):
                     cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
                 else:
-                    cv_scores = cross_val_score(model, X_train_processed, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
+                    cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
 
                 results[model_name] = {
                     'accuracy': accuracy,

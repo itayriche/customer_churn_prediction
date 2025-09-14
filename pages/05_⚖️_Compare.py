@@ -6,6 +6,7 @@ for customer churn prediction, including performance metrics, feature importance
 and business impact analysis.
 """
 
+import joblib
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -20,7 +21,7 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_curve, 
 # Add src directory to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, RANDOM_STATE, TEST_SIZE
+from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, RANDOM_STATE, TEST_SIZE, PROBABILITY_THRESHOLD
 from webutils.web_utils import (
     load_models, load_and_cache_data, load_custom_css,
     create_confusion_matrix_heatmap, format_currency
@@ -36,14 +37,10 @@ def get_model_comparison_data():
         if df.empty:
             return {}
         
-        # Prepare data
-        X = df.drop('Churn', axis=1)
-        y = df['Churn'].map({'No': 0, 'Yes': 1})
-        
-        # Split data
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
-        )
+        out_path = os.path.join("data/", f"splits.joblib")
+        bundle = joblib.load(out_path)
+        X_train, X_test = bundle["X_train"], bundle["X_test"]
+        y_train, y_test = bundle["y_train"], bundle["y_test"]
         
         # Load models
         models = load_models()
@@ -52,9 +49,9 @@ def get_model_comparison_data():
         for model_name, model in models.items():
             try:
                 # Make predictions
-                y_pred = model.predict(X_test)
+                #y_pred = model.predict(X_test)
                 y_pred_proba = model.predict_proba(X_test)[:, 1]
-                
+                y_pred = (y_pred_proba >= PROBABILITY_THRESHOLD).astype(int)
                 # Calculate comprehensive metrics
                 from sklearn.metrics import (
                     accuracy_score, precision_score, recall_score, f1_score, 

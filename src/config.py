@@ -98,3 +98,5 @@ PRIMARY_METRIC = 'recall'
 
 # Ensure model directory exists
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
+
+PROBABILITY_THRESHOLD = 0.45

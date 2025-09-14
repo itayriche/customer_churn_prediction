@@ -17,6 +17,8 @@ import sys
 import os
 import time
 from datetime import datetime
+from pathlib import Path
+import joblib
 
 # Add src directory to Python path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
@@ -59,7 +61,13 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         
         phase_start = time.time()
         X_train, X_test, y_train, y_test, preprocessor = preprocess_pipeline()
-        
+        out_path = os.path.join("data/", f"splits.joblib")
+        joblib.dump(
+        {"X_train": X_train, "X_test": X_test, "y_train": y_train, "y_test": y_test, "preprocessor": preprocessor},
+        out_path
+        )
+        print(f"Splits saved to: {out_path}")
+
         print(f"✓ Data preprocessing completed in {format_duration(time.time() - phase_start)}")
         
         # ========================
