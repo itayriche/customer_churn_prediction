@@ -62,11 +62,12 @@ NUMERICAL_FEATURES = ["tenure", "MonthlyCharges", "TotalCharges"]
 # Simple data cleaning function (simplified from src)
 def clean_data(df):
     """Clean the dataset."""
-    # Convert TotalCharges to numeric
+    # Convert to numeric
     df['TotalCharges'] = pd.to_numeric(df['TotalCharges'], errors='coerce')
-    
+    df['MonthlyCharges'] = pd.to_numeric(df['MonthlyCharges'], errors='coerce')
+
     # Drop rows with missing TotalCharges
-    df = df.dropna(subset=['TotalCharges'])
+    df = df.dropna()
     
     # Convert SeniorCitizen to string
     df['SeniorCitizen'] = df['SeniorCitizen'].map({0: 'No', 1: 'Yes'})

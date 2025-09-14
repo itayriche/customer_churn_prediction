@@ -21,8 +21,7 @@ except ImportError:
     XGBClassifier = None
     print("Warning: XGBoost not available. Install with: pip install xgboost")
 
-from .config import MODELS_CONFIG, RANDOM_STATE, CV_FOLDS, SCORING_METRICS, MODEL_SAVE_PATH
-
+from .config import MODELS_CONFIG, RANDOM_STATE, CV_FOLDS, PRIMARY_METRIC, MODEL_SAVE_PATH
 
 class ModelTrainer:
     """Class for training and managing multiple machine learning models."""
@@ -126,7 +125,7 @@ class ModelTrainer:
         return self.trained_models
     
     def perform_cross_validation(self, X_train: pd.DataFrame, y_train: pd.Series,
-                               scoring: str = 'accuracy', cv: int = CV_FOLDS) -> Dict[str, float]:
+                               scoring: str = PRIMARY_METRIC, cv: int = CV_FOLDS) -> Dict[str, float]:
         """
         Perform cross-validation on all models.
         
@@ -171,7 +170,7 @@ class ModelTrainer:
     
     def hyperparameter_tuning(self, X_train: pd.DataFrame, y_train: pd.Series,
                             model_names: Optional[List[str]] = None,
-                            scoring: str = 'roc_auc', cv: int = 3) -> Dict[str, Any]:
+                            scoring: str = PRIMARY_METRIC, cv: int = CV_FOLDS) -> Dict[str, Any]:
         """
         Perform hyperparameter tuning using GridSearchCV.
         
@@ -395,8 +394,8 @@ def train_baseline_models(X_train: pd.DataFrame, y_train: pd.Series,
     trained_models = trainer.train_models(X_train, y_train)
     
     # Perform cross-validation
-    cv_scores = trainer.perform_cross_validation(X_train, y_train, scoring='roc_auc')
-    
+    cv_scores = trainer.perform_cross_validation(X_train, y_train, scoring=config.PRIMARY_METRIC, cv=config.CV_FOLDS)
+
     return trainer, cv_scores
 
 

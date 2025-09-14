@@ -18,11 +18,12 @@ import os
 from pathlib import Path
 from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
 from sklearn.model_selection import cross_val_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 
 # Add src directory to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PRIMARY_METRIC, RANDOM_STATE, TEST_SIZE
+from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PRIMARY_METRIC, RANDOM_STATE, TEST_SIZE, CV_FOLDS
 from webutils.web_utils import (
     load_models, load_and_cache_data, load_custom_css,
     display_model_metrics, create_confusion_matrix_heatmap,
@@ -33,21 +34,28 @@ from sklearn.model_selection import train_test_split
 
 @st.cache_data
 def evaluate_all_models():
-    """Evaluate all loaded models and return performance metrics."""
+    """Evaluate all loaded models using the same preprocessing pipeline from training."""
     try:
         # Load data
         df = load_and_cache_data()
         if df.empty:
             return {}
         
-        # Prepare data
+        # Prepare data EXACTLY as in training
         X = df.drop('Churn', axis=1)
         y = df['Churn'].map({'No': 0, 'Yes': 1})
         
-        # Split data
+        # ✅ Use the SAME split as in training (same random state)
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
         )
+        
+        # ✅ Create the SAME preprocessor as in training
+        preprocessor = create_preprocessor()
+        
+        # ✅ Fit preprocessor ONLY on training data
+        X_train_processed = preprocessor.fit_transform(X_train)
+        X_test_processed = preprocessor.transform(X_test)  # Only transform, don't fit!
         
         # Load models
         models = load_models()
@@ -55,12 +63,17 @@ def evaluate_all_models():
         
         for model_name, model in models.items():
             try:
-                # Make predictions
-                y_pred = model.predict(X_test)
-                y_pred_proba = model.predict_proba(X_test)[:, 1]
+                # ✅ Check if model is a pipeline (already includes preprocessing)
+                if hasattr(model, 'named_steps'):
+                    # Model is a pipeline - use original data
+                    y_pred = model.predict(X_test)
+                    y_pred_proba = model.predict_proba(X_test)[:, 1]
+                else:
+                    # Model is just the classifier - use preprocessed data
+                    y_pred = model.predict(X_test_processed)
+                    y_pred_proba = model.predict_proba(X_test_processed)[:, 1]
                 
-                # Calculate metrics
-                from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
+                
                 
                 accuracy = accuracy_score(y_test, y_pred)
                 precision = precision_score(y_test, y_pred)
@@ -74,9 +87,12 @@ def evaluate_all_models():
                 # ROC curve
                 fpr, tpr, _ = roc_curve(y_test, y_pred_proba)
                 
-                # Cross-validation scores
-                cv_scores = cross_val_score(model, X_train, y_train, cv=5, scoring='accuracy')
-                
+                # ✅ Cross-validation with proper preprocessing
+                if hasattr(model, 'named_steps'):
+                    cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
+                else:
+                    cv_scores = cross_val_score(model, X_train_processed, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
+
                 results[model_name] = {
                     'accuracy': accuracy,
                     'precision': precision,

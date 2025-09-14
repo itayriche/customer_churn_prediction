@@ -72,14 +72,14 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         df = load_data()
         df_clean = clean_data(df)
         
-        print("Creating visualizations...")
-        create_churn_distribution_plot(df_clean)
-        create_numerical_histograms(df_clean)
-        create_categorical_churn_analysis(df_clean)
-        create_correlation_heatmap(df_clean)
+        #print("Creating visualizations...")
+        #create_churn_distribution_plot(df_clean)
+        #create_numerical_histograms(df_clean)
+        #create_categorical_churn_analysis(df_clean)
+        #create_correlation_heatmap(df_clean)
         
         # Display correlation analysis
-        correlation_df = display_correlation_with_target(df_clean)
+        #correlation_df = display_correlation_with_target(df_clean)
         
         # ========================
         # PHASE 3: MODEL TRAINING

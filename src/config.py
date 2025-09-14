@@ -15,17 +15,16 @@ MODELS_CONFIG: Dict[str, Any] = {
         "class_name": "LogisticRegression",
         "params": {"random_state": RANDOM_STATE, "max_iter": 1000},
         "hyperparameters": {
-            "C": [0.1, 1, 10, 100],
+            "C": [0.001, 0.01, 0.1, 1, 10],
             "solver": ["liblinear", "lbfgs"]
         }
     },
     "random_forest": {
         "class_name": "RandomForestClassifier",
-        "params": {"random_state": RANDOM_STATE, "n_estimators": 100},
+        "params": {"random_state": RANDOM_STATE, "n_estimators": 200},
         "hyperparameters": {
             "n_estimators": [50, 100, 200],
-            "max_depth": [None, 4, 6, 8, 10],
-            "min_samples_split": [2, 5, 10],
+            "max_depth": [4, 6, 8, 10],
             "min_samples_leaf": [10, 20, 30]
         }
     },
@@ -33,7 +32,7 @@ MODELS_CONFIG: Dict[str, Any] = {
         "class_name": "SVC",
         "params": {"random_state": RANDOM_STATE, "probability": True},
         "hyperparameters": {
-            "C": [0.1, 1, 10],
+            "C": [0.01, 0.1, 1, 10],
             "kernel": ["rbf", "linear"],
             "gamma": ["scale", "auto"]
         }
@@ -51,8 +50,7 @@ MODELS_CONFIG: Dict[str, Any] = {
         "class_name": "DecisionTreeClassifier",
         "params": {"random_state": RANDOM_STATE},
         "hyperparameters": {
-            "max_depth": [None, 4, 6, 8, 10],
-            "min_samples_split": [2, 5, 10],
+            "max_depth": [4, 6, 8, 10],
             "min_samples_leaf": [10, 20, 30]
         }
     },
