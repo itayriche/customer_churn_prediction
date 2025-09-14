@@ -436,28 +436,135 @@ def format_currency(amount: float) -> str:
     """Format amount as currency."""
     return f"${amount:,.2f}"
 
+import random
+import numpy as np
+
 def get_sample_customer_data() -> Dict[str, Any]:
-    """Get sample customer data for demonstration."""
+    """Generate random sample customer data for demonstration."""
+    
+    # Set random seed for reproducibility within session
+    random.seed()
+    
+    # Define realistic value ranges for each category
+    gender_options = ['Male', 'Female']
+    senior_citizen_options = ['No', 'Yes']
+    partner_options = ['No', 'Yes']
+    dependents_options = ['No', 'Yes']
+    phone_service_options = ['Yes', 'No']
+    multiple_lines_options = ['No', 'Yes', 'No phone service']
+    internet_service_options = ['DSL', 'Fiber optic', 'No']
+    online_security_options = ['No', 'Yes', 'No internet service']
+    online_backup_options = ['No', 'Yes', 'No internet service']
+    device_protection_options = ['No', 'Yes', 'No internet service']
+    tech_support_options = ['No', 'Yes', 'No internet service']
+    streaming_tv_options = ['No', 'Yes', 'No internet service']
+    streaming_movies_options = ['No', 'Yes', 'No internet service']
+    contract_options = ['Month-to-month', 'One year', 'Two year']
+    paperless_billing_options = ['No', 'Yes']
+    payment_method_options = [
+        'Electronic check', 'Mailed check', 
+        'Bank transfer (automatic)', 'Credit card (automatic)'
+    ]
+    
+    # Generate random selections
+    gender = random.choice(gender_options)
+    senior_citizen = random.choice(senior_citizen_options)
+    partner = random.choice(partner_options)
+    dependents = random.choice(dependents_options)
+    phone_service = random.choice(phone_service_options)
+    
+    # Conditional logic for dependent services
+    if phone_service == 'No':
+        multiple_lines = 'No phone service'
+    else:
+        multiple_lines = random.choice(['No', 'Yes'])
+    
+    internet_service = random.choice(internet_service_options)
+    
+    # Internet-dependent services
+    if internet_service == 'No':
+        online_security = 'No internet service'
+        online_backup = 'No internet service'
+        device_protection = 'No internet service'
+        tech_support = 'No internet service'
+        streaming_tv = 'No internet service'
+        streaming_movies = 'No internet service'
+    else:
+        online_security = random.choice(['No', 'Yes'])
+        online_backup = random.choice(['No', 'Yes'])
+        device_protection = random.choice(['No', 'Yes'])
+        tech_support = random.choice(['No', 'Yes'])
+        streaming_tv = random.choice(['No', 'Yes'])
+        streaming_movies = random.choice(['No', 'Yes'])
+    
+    contract = random.choice(contract_options)
+    paperless_billing = random.choice(paperless_billing_options)
+    payment_method = random.choice(payment_method_options)
+    
+    # Generate realistic numerical values
+    # Tenure: weighted towards realistic distributions
+    tenure_weights = [0.3, 0.25, 0.2, 0.15, 0.1]  # Higher chance for newer customers
+    tenure_ranges = [
+        (0, 12),    # 0-12 months (30%)
+        (13, 24),   # 13-24 months (25%)
+        (25, 36),   # 25-36 months (20%)
+        (37, 48),   # 37-48 months (15%)
+        (49, 72)    # 49-72 months (10%)
+    ]
+    tenure_range = random.choices(tenure_ranges, weights=tenure_weights)[0]
+    tenure = random.randint(tenure_range[0], tenure_range[1])
+    
+    # Monthly charges based on services
+    base_charge = 20.0
+    
+    # Add charges based on services
+    if phone_service == 'Yes':
+        base_charge += random.uniform(15, 25)
+    
+    if multiple_lines == 'Yes':
+        base_charge += random.uniform(8, 15)
+    
+    if internet_service == 'DSL':
+        base_charge += random.uniform(20, 30)
+    elif internet_service == 'Fiber optic':
+        base_charge += random.uniform(40, 60)
+    
+    # Add premium services
+    premium_services = [online_security, online_backup, device_protection, 
+                       tech_support, streaming_tv, streaming_movies]
+    premium_count = sum(1 for service in premium_services if service == 'Yes')
+    base_charge += premium_count * random.uniform(3, 8)
+    
+    # Add some randomness
+    monthly_charges = round(base_charge + random.uniform(-10, 20), 2)
+    monthly_charges = max(18.25, min(118.75, monthly_charges))  # Realistic bounds
+    
+    # Calculate total charges based on tenure
+    # Add some variation for payment history
+    avg_monthly = monthly_charges * random.uniform(0.85, 1.15)
+    total_charges = round(avg_monthly * tenure + random.uniform(-200, 500), 2)
+    total_charges = max(18.25, total_charges)  # Minimum charge
+    
     return {
-        'gender': 'Female',
-        'SeniorCitizen': 'No',
-        'Partner': 'Yes',
-        'Dependents': 'No',
-        'tenure': 24,
-        'PhoneService': 'Yes',
-        'MultipleLines': 'No',
-        'InternetService': 'Fiber optic',
-        'OnlineSecurity': 'No',
-        'OnlineBackup': 'Yes',
-        'DeviceProtection': 'No',
-        'TechSupport': 'No',
-        'StreamingTV': 'No',
-        'StreamingMovies': 'No',
-        'Contract': 'Month-to-month',
-        'PaperlessBilling': 'Yes',
-        'PaymentMethod': 'Electronic check',
-        'MonthlyCharges': 70.85,
-        'TotalCharges': 1701.0
+        'gender': gender,
+        'SeniorCitizen': senior_citizen,
+        'Partner': partner,
+        'Dependents': dependents,
+        'tenure': tenure,
+        'PhoneService': phone_service,
+        'MultipleLines': multiple_lines,
+        'InternetService': internet_service,
+        'OnlineSecurity': online_security,
+        'OnlineBackup': online_backup,
+        'DeviceProtection': device_protection,
+        'TechSupport': tech_support,
+        'StreamingTV': streaming_tv,
+        'StreamingMovies': streaming_movies,
+        'Contract': contract,
+        'PaperlessBilling': paperless_billing,
+        'PaymentMethod': payment_method,
+        'MonthlyCharges': monthly_charges,
+        'TotalCharges': total_charges
     }
 
 # Simple interpretability class (simplified)
