@@ -66,15 +66,18 @@ def evaluate_all_models():
                 # ✅ Check if model is a pipeline (already includes preprocessing)
                 if hasattr(model, 'named_steps'):
                     # Model is a pipeline - use original data
-                    y_pred = model.predict(X_test)
+                    #y_pred = model.predict(X_test)
                     y_pred_proba = model.predict_proba(X_test)[:, 1]
+                    # Thresholding
+                    y_pred = (y_pred_proba >= 0.4).astype(int)
                 else:
                     # Model is just the classifier - use preprocessed data
-                    y_pred = model.predict(X_test_processed)
+                    #y_pred = model.predict(X_test_processed)
                     y_pred_proba = model.predict_proba(X_test_processed)[:, 1]
-                
-                
-                
+                    # Thresholding
+                    y_pred = (y_pred_proba >= 0.4).astype(int)
+
+                # Compute metrics
                 accuracy = accuracy_score(y_test, y_pred)
                 precision = precision_score(y_test, y_pred)
                 recall = recall_score(y_test, y_pred)
