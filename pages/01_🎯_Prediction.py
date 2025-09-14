@@ -36,24 +36,28 @@ def create_input_form():
         gender = st.selectbox(
             "Gender",
             options=['Female', 'Male'],
+            key='gender',
             help="Customer's gender"
         )
         
         senior_citizen = st.selectbox(
             "Senior Citizen",
             options=['No', 'Yes'],
+            key='SeniorCitizen',
             help="Whether customer is a senior citizen (65+)"
         )
         
         partner = st.selectbox(
             "Partner",
             options=['No', 'Yes'],
+            key='Partner',
             help="Whether customer has a partner"
         )
         
         dependents = st.selectbox(
             "Dependents",
             options=['No', 'Yes'],
+            key='Dependents',
             help="Whether customer has dependents"
         )
         
@@ -62,30 +66,35 @@ def create_input_form():
         phone_service = st.selectbox(
             "Phone Service",
             options=['No', 'Yes'],
+            key='PhoneService',
             help="Whether customer has phone service"
         )
         
         multiple_lines = st.selectbox(
             "Multiple Lines",
             options=['No phone service', 'No', 'Yes'],
+            key='MultipleLines',
             help="Whether customer has multiple phone lines"
         )
         
         internet_service = st.selectbox(
             "Internet Service",
             options=['DSL', 'Fiber optic', 'No'],
+            key='InternetService',
             help="Type of internet service"
         )
         
         online_security = st.selectbox(
             "Online Security",
             options=['No', 'Yes', 'No internet service'],
+            key='OnlineSecurity',
             help="Whether customer has online security add-on"
         )
         
         online_backup = st.selectbox(
             "Online Backup",
             options=['No', 'Yes', 'No internet service'],
+            key='OnlineBackup',
             help="Whether customer has online backup service"
         )
     
@@ -95,24 +104,28 @@ def create_input_form():
         device_protection = st.selectbox(
             "Device Protection",
             options=['No', 'Yes', 'No internet service'],
+            key='DeviceProtection',
             help="Whether customer has device protection plan"
         )
         
         tech_support = st.selectbox(
             "Tech Support",
             options=['No', 'Yes', 'No internet service'],
+            key='TechSupport',
             help="Whether customer has tech support service"
         )
         
         streaming_tv = st.selectbox(
             "Streaming TV",
             options=['No', 'Yes', 'No internet service'],
+            key='StreamingTV',
             help="Whether customer has streaming TV service"
         )
         
         streaming_movies = st.selectbox(
             "Streaming Movies",
             options=['No', 'Yes', 'No internet service'],
+            key='StreamingMovies',
             help="Whether customer has streaming movies service"
         )
         
@@ -121,56 +134,54 @@ def create_input_form():
         contract = st.selectbox(
             "Contract Type",
             options=['Month-to-month', 'One year', 'Two year'],
-            help="Customer's contract type"
+            key='Contract',
+            help="Length of customer contract"
         )
         
         paperless_billing = st.selectbox(
             "Paperless Billing",
             options=['No', 'Yes'],
+            key='PaperlessBilling',
             help="Whether customer uses paperless billing"
         )
         
         payment_method = st.selectbox(
             "Payment Method",
             options=[
-                'Electronic check', 
-                'Mailed check', 
-                'Bank transfer (automatic)',
-                'Credit card (automatic)'
+                'Electronic check', 'Mailed check',
+                'Bank transfer (automatic)', 'Credit card (automatic)'
             ],
+            key='PaymentMethod',
             help="Customer's payment method"
         )
-    
-    # Numerical features in a separate section
-    st.markdown("**📊 Usage & Billing**")
-    num_col1, num_col2, num_col3 = st.columns(3)
-    
-    with num_col1:
+        
+        st.markdown("**💰 Financial Information**")
+        
         tenure = st.number_input(
             "Tenure (months)",
             min_value=0,
             max_value=100,
-            value=12,
+            value=st.session_state.get('tenure', 1),
+            key='tenure',
             help="Number of months customer has been with company"
         )
-    
-    with num_col2:
+        
         monthly_charges = st.number_input(
             "Monthly Charges ($)",
             min_value=0.0,
             max_value=200.0,
-            value=65.0,
+            value=st.session_state.get('MonthlyCharges', 50.0),
             step=0.01,
+            key='MonthlyCharges',
             help="Customer's monthly charges"
         )
-    
-    with num_col3:
+        
         total_charges = st.number_input(
             "Total Charges ($)",
             min_value=0.0,
-            max_value=10000.0,
-            value=float(tenure * monthly_charges),
+            value=st.session_state.get('TotalCharges', 500.0),
             step=0.01,
+            key='TotalCharges',
             help="Customer's total charges to date"
         )
     
