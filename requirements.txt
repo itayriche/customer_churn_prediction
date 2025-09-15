@@ -1,7 +1,8 @@
-# --- core runtime ---
+# Compatibility adjustment for numpy and numba dependencies.
+
 streamlit==1.49.1
 pandas==2.3.2
-numpy==2.3.3
+numpy>=1.17,<2.3
 scikit-learn==1.7.2
 xgboost==3.0.5
 shap==0.48.0
