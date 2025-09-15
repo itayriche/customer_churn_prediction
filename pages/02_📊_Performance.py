@@ -20,16 +20,54 @@ from sklearn.metrics import confusion_matrix, classification_report, roc_curve, 
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, roc_auc_score
 import joblib
-# Add src directory to Python path
+# Add src directory and webutils to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
+sys.path.append(str(Path(__file__).parent.parent))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PRIMARY_METRIC, RANDOM_STATE, TEST_SIZE, CV_FOLDS, PROBABILITY_THRESHOLD
+# Configuration constants (duplicated to avoid import issues when running as standalone page)
+CATEGORICAL_FEATURES = [
+    "gender", "SeniorCitizen", "Partner", "Dependents", "PhoneService",
+    "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup",
+    "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies",
+    "Contract", "PaperlessBilling", "PaymentMethod"
+]
+
+NUMERICAL_FEATURES = ["tenure", "MonthlyCharges", "TotalCharges"]
+PRIMARY_METRIC = 'f1'
+RANDOM_STATE = 42
+TEST_SIZE = 0.2
+CV_FOLDS = 5
+PROBABILITY_THRESHOLD = 0.47
+
+# Try to import from src.config if available, otherwise use defaults above
+try:
+    from src.config import (
+        CATEGORICAL_FEATURES as CONFIG_CAT_FEATURES,
+        NUMERICAL_FEATURES as CONFIG_NUM_FEATURES,
+        PRIMARY_METRIC as CONFIG_PRIMARY_METRIC,
+        RANDOM_STATE as CONFIG_RANDOM_STATE,
+        TEST_SIZE as CONFIG_TEST_SIZE,
+        CV_FOLDS as CONFIG_CV_FOLDS,
+        PROBABILITY_THRESHOLD as CONFIG_PROB_THRESHOLD
+    )
+    # Use config values if import successful
+    CATEGORICAL_FEATURES = CONFIG_CAT_FEATURES
+    NUMERICAL_FEATURES = CONFIG_NUM_FEATURES
+    PRIMARY_METRIC = CONFIG_PRIMARY_METRIC
+    RANDOM_STATE = CONFIG_RANDOM_STATE
+    TEST_SIZE = CONFIG_TEST_SIZE
+    CV_FOLDS = CONFIG_CV_FOLDS
+    PROBABILITY_THRESHOLD = CONFIG_PROB_THRESHOLD
+except ImportError:
+    # Use default values defined above
+    pass
 from webutils.web_utils import (
     load_models, load_and_cache_data, load_custom_css,
     display_model_metrics, create_confusion_matrix_heatmap,
     create_feature_importance_chart
 )
-from src.data_preprocessing import create_preprocessor
+# Remove problematic import - not used in this file
+# from src.data_preprocessing import create_preprocessor
 from sklearn.model_selection import train_test_split
 
 @st.cache_data
@@ -203,42 +241,73 @@ def create_cv_scores_plot(results):
     return fig
 
 def display_feature_importance(model_name, model):
-    """Display feature importance for tree-based models."""
+    """Display feature importance for tree-based and linear models."""
     try:
-        if hasattr(model, 'feature_importances_'):
+        # Extract the classifier from pipeline
+        if hasattr(model, 'named_steps') and 'classifier' in model.named_steps:
+            classifier = model.named_steps['classifier']
+            preprocessor = model.named_steps['preprocessor']
+            
             # Get feature names from the preprocessor
-            if hasattr(model, 'named_steps') and 'preprocessor' in model.named_steps:
-                preprocessor = model.named_steps['preprocessor']
-                feature_names = []
+            feature_names = []
+            
+            # Get categorical feature names
+            if hasattr(preprocessor, 'named_transformers_'):
+                cat_transformer = preprocessor.named_transformers_.get('cat')
+                if hasattr(cat_transformer, 'get_feature_names_out'):
+                    cat_features = cat_transformer.get_feature_names_out(CATEGORICAL_FEATURES)
+                    feature_names.extend(cat_features)
+            
+            # Add numerical features
+            feature_names.extend(NUMERICAL_FEATURES)
+            
+            # Get importance values based on model type
+            importance_values = None
+            chart_title = f"Feature Importance - {model_name.replace('_', ' ').title()}"
+            
+            if hasattr(classifier, 'feature_importances_'):
+                # Tree-based models (Random Forest, Gradient Boosting, etc.)
+                importance_values = classifier.feature_importances_
                 
-                # Get categorical feature names
-                if hasattr(preprocessor, 'named_transformers_'):
-                    cat_transformer = preprocessor.named_transformers_.get('cat')
-                    if hasattr(cat_transformer, 'get_feature_names_out'):
-                        cat_features = cat_transformer.get_feature_names_out(CATEGORICAL_FEATURES)
-                        feature_names.extend(cat_features)
-                
-                # Add numerical features
-                feature_names.extend(NUMERICAL_FEATURES)
-                
-                # Get importance values
-                importance_values = model.feature_importances_
-                
+            elif hasattr(classifier, 'coef_'):
+                # Linear models (Logistic Regression, SVM with linear kernel)
+                # Use absolute values of coefficients as importance
+                coef = classifier.coef_
+                if coef.ndim > 1:
+                    # Multi-class or multi-output
+                    importance_values = np.abs(coef[0])  # Use first class for binary classification
+                else:
+                    importance_values = np.abs(coef)
+                chart_title = f"Feature Coefficients (Absolute) - {model_name.replace('_', ' ').title()}"
+            
+            if importance_values is not None:
                 if len(feature_names) == len(importance_values):
                     fig = create_feature_importance_chart(
                         feature_names, 
                         importance_values,
-                        f"Feature Importance - {model_name.replace('_', ' ').title()}"
+                        chart_title
                     )
                     st.plotly_chart(fig, use_container_width=True)
+                    
+                    # Display additional information
+                    if hasattr(classifier, 'feature_importances_'):
+                        st.info("📊 **Tree-based Model**: Values represent feature importance scores (higher = more important)")
+                    elif hasattr(classifier, 'coef_'):
+                        st.info("📊 **Linear Model**: Values represent absolute coefficient magnitudes (higher = stronger influence)")
                 else:
-                    st.info("Feature importance chart not available due to dimension mismatch")
+                    st.warning(f"Feature dimension mismatch: {len(feature_names)} feature names vs {len(importance_values)} importance values")
             else:
-                st.info("Feature importance not available for this model type")
+                # Models without interpretable feature importance (e.g., SVM with RBF kernel)
+                model_type = type(classifier).__name__
+                st.info(f"📊 Feature importance visualization is not available for {model_type}. Consider using tree-based models (Random Forest, Gradient Boosting) or linear models (Logistic Regression) for interpretable feature importance.")
         else:
-            st.info("This model type doesn't provide feature importance")
+            st.info("Feature importance not available - model is not a pipeline with classifier component")
+            
     except Exception as e:
-        st.warning(f"Could not display feature importance: {str(e)}")
+        st.error(f"Error displaying feature importance: {str(e)}")
+        # Display debug information in development
+        if st.secrets.get("debug", False):  # Only show in debug mode
+            st.exception(e)
 
 def main():
     load_custom_css()
