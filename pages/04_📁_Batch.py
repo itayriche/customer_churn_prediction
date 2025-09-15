@@ -18,7 +18,7 @@ import base64
 # Add src directory to Python path
 sys.path.append(str(Path(__file__).parent.parent / 'src'))
 
-from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES
+from src.config import CATEGORICAL_FEATURES, NUMERICAL_FEATURES, PROBABILITY_THRESHOLD
 from webutils.web_utils import (
     load_models, load_custom_css, get_risk_category, 
     format_probability, validate_input_data, show_loading_spinner
@@ -101,8 +101,11 @@ def process_batch_predictions(df, model, model_name):
     """Process batch predictions for the uploaded data."""
     try:
         # Make predictions
-        predictions = model.predict(df)
+        #predictions = model.predict(df)
         probabilities = model.predict_proba(df)[:, 1]
+
+        # predictions by thresholding probability
+        predictions = (probabilities >= PROBABILITY_THRESHOLD).astype(int)
         
         # Create results dataframe
         results_df = df.copy()
@@ -443,7 +446,7 @@ def main():
             show_columns = st.multiselect(
                 "Select Columns to Display",
                 options=list(results_df.columns),
-                default=['customerID', 'Predicted_Churn', 'Probability_Percentage', 'Risk_Category', 'MonthlyCharges'],
+                default=['Predicted_Churn', 'Probability_Percentage', 'Risk_Category', 'MonthlyCharges'],
                 help="Choose which columns to show in the table"
             )
         

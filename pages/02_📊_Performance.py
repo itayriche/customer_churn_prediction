@@ -66,9 +66,7 @@ from webutils.web_utils import (
     display_model_metrics, create_confusion_matrix_heatmap,
     create_feature_importance_chart
 )
-# Remove problematic import - not used in this file
-# from src.data_preprocessing import create_preprocessor
-from sklearn.model_selection import train_test_split
+
 
 @st.cache_data
 def evaluate_all_models():
@@ -115,9 +113,9 @@ def evaluate_all_models():
                 
                 # ✅ Cross-validation with proper preprocessing
                 if hasattr(model, 'named_steps'):
-                    cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
+                    cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring="accuracy")
                 else:
-                    cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring=PRIMARY_METRIC)
+                    cv_scores = cross_val_score(model, X_train, y_train, cv=CV_FOLDS, scoring="accuracy")
 
                 results[model_name] = {
                     'accuracy': accuracy,
