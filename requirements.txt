@@ -22,3 +22,4 @@ streamlit-plotly-events==0.0.6
 streamlit-lottie==0.0.5
 streamlit-metrics==0.1.0
 typing-extensions==4.15.0
+IPython==8.15.0
