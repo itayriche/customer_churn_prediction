@@ -143,12 +143,6 @@ Thumbs.db
 *.swp
 *.swo
 
-# Model files
-*.pkl
-*.joblib
-models/
-*.h5
-*.model
 
 # Data files (uncomment if you don't want to track data files)
 # *.csv
