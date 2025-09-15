@@ -50,35 +50,46 @@ def create_churn_distribution():
     
     return fig
 
+import pandas as pd
+import numpy as np
+import plotly.graph_objects as go
+
 def create_feature_correlation_heatmap():
-    """Create correlation heatmap for numerical features."""
+    """Create correlation heatmap for all features (numerical + one-hot encoded categorical)."""
     df = load_and_cache_data()
     if df.empty:
         return None
-    
+
     # Convert churn to numeric
     df_numeric = df.copy()
     df_numeric['Churn'] = df_numeric['Churn'].map({'No': 0, 'Yes': 1})
     
-    # Select numerical features and target
-    numeric_features = NUMERICAL_FEATURES + ['Churn']
-    correlation_matrix = df_numeric[numeric_features].corr()
+    # One-hot encode categorical features
+    df_encoded = pd.get_dummies(df_numeric, drop_first=True)
     
+    # Compute correlation of features with 'Churn'
+    churn_corr = df_encoded.corr()['Churn'].drop('Churn')  # Exclude correlation of 'Churn' with itself
+    top_15_features = churn_corr.abs().nlargest(15).index  # Get top 15 features by absolute correlation
+
+    # Create a DataFrame for the top 15 features
+    top_15_corr = df_encoded[top_15_features].corr()
+
+    # Create the heatmap
     fig = go.Figure(data=go.Heatmap(
-        z=correlation_matrix.values,
-        x=correlation_matrix.columns,
-        y=correlation_matrix.columns,
+        z=top_15_corr.values,
+        x=top_15_corr.columns,
+        y=top_15_corr.columns,
         colorscale='RdBu',
         zmid=0,
-        text=np.round(correlation_matrix.values, 2),
+        text=np.round(top_15_corr.values, 2),
         texttemplate="%{text}",
         textfont={"size": 10}
     ))
     
     fig.update_layout(
-        title='Feature Correlation Matrix',
-        height=500,
-        width=500
+        title='Top 15 Feature Correlations with Churn',
+        height=800,
+        width=800
     )
     
     return fig
@@ -326,16 +337,22 @@ def main():
     with col2:
         st.markdown("**Correlation Insights:**")
         
-        # Calculate some specific correlations
+        # Convert Churn to numeric
         df_numeric = df.copy()
         df_numeric['Churn'] = df_numeric['Churn'].map({'No': 0, 'Yes': 1})
         
-        correlations = df_numeric[NUMERICAL_FEATURES + ['Churn']].corr()['Churn'].drop('Churn').sort_values(key=abs, ascending=False)
+        # One-hot encode categorical features
+        df_encoded = pd.get_dummies(df_numeric, drop_first=True)
         
-        st.write("**Strongest correlations with churn:**")
-        for feature, corr in correlations.items():
-            direction = "positive" if corr > 0 else "negative"
-            st.write(f"• **{feature}**: {corr:.3f} ({direction})")
+        # Calculate correlations of all features with 'Churn'
+        correlations = df_encoded.corr()['Churn'].drop('Churn').sort_values(key=abs, ascending=False)
+        # Select the top 15 correlations
+        top_15_correlations = correlations.head(15)
+
+        # Display the top correlations
+        st.write("Top 15 Correlations with 'Churn':")
+        for feature, corr_value in top_15_correlations.items():
+            st.write(f"{feature}: {corr_value:.2f}")
     
     # Categorical analysis
     st.subheader("🏷️ Categorical Feature Analysis")
