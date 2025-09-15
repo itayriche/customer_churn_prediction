@@ -43,7 +43,7 @@ MODELS_CONFIG: Dict[str, Any] = {
         "hyperparameters": {
             "n_estimators": [50, 100, 200],
             "max_depth": [3, 6, 10],
-            "learning_rate": [0.01, 0.1, 0.2]
+            "learning_rate": [0.01, 0.1, 0.2],
         }
     },
     "decision_tree": {
@@ -60,7 +60,7 @@ MODELS_CONFIG: Dict[str, Any] = {
         "hyperparameters": {
             "n_estimators": [50, 100, 200],
             "max_depth": [3, 6, 10],
-            "learning_rate": [0.01, 0.1, 0.2]
+            "learning_rate": [0.01, 0.1, 0.2], 
         }
     },
     "ada_boost": {
@@ -94,9 +94,9 @@ PLOT_STYLE = 'seaborn-v0_8'
 # Cross-validation configuration
 CV_FOLDS = 5
 SCORING_METRICS = ['accuracy', 'precision', 'recall', 'f1', 'roc_auc', 'average_precision']
-PRIMARY_METRIC = 'recall'
+PRIMARY_METRIC = 'f1'
 
 # Ensure model directory exists
 os.makedirs(MODEL_SAVE_PATH, exist_ok=True)
 
-PROBABILITY_THRESHOLD = 0.45
+PROBABILITY_THRESHOLD = 0.47
