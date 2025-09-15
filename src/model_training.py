@@ -82,8 +82,12 @@ class ModelTrainer:
         if include_neural_network:
             try:
                 self.models['neural_network'] = MLPClassifier(
-                    hidden_layer_sizes=(100, 50),
+                    hidden_layer_sizes=(32, 16, 8, 2),
                     max_iter=1000,
+                    early_stopping=True,
+                    validation_fraction=0.1,
+                    n_iter_no_change=20,
+                    learning_rate='adaptive',
                     random_state=RANDOM_STATE
                 )
                 print("Initialized neural_network")
@@ -394,7 +398,7 @@ def train_baseline_models(X_train: pd.DataFrame, y_train: pd.Series,
     trained_models = trainer.train_models(X_train, y_train)
     
     # Perform cross-validation
-    cv_scores = trainer.perform_cross_validation(X_train, y_train, scoring=config.PRIMARY_METRIC, cv=config.CV_FOLDS)
+    cv_scores = trainer.perform_cross_validation(X_train, y_train, scoring=PRIMARY_METRIC, cv=CV_FOLDS)
 
     return trainer, cv_scores
 
