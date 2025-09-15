@@ -2,7 +2,9 @@
 # --- core runtime ---
 streamlit==1.49.1
 pandas==2.3.2
-numpy==2.3.3
+numpy==2.2.2          # <-- was 2.3.3; 2.2.2 satisfies numba
+numba==0.61.2         # cp313 wheel; requires numpy <2.3
+llvmlite==0.44.0      # matches numba 0.61.x constraint (<0.45)
 scikit-learn==1.7.2
 xgboost==3.0.5
 shap==0.48.0
