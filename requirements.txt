@@ -1,3 +1,4 @@
+'''
 # Additional packages for enhanced functionality
 jupyter>=1.0.0
 ipykernel>=6.15.0
@@ -41,3 +42,27 @@ streamlit-metrics>=0.1.0
 # Development and testing
 pytest>=7.0.0
 pytest-streamlit>=0.1.0
+'''
+# --- core runtime ---
+streamlit==1.49.1
+pandas==2.3.2
+numpy==2.3.3
+scikit-learn==1.7.2
+xgboost==3.0.5
+shap==0.48.0
+matplotlib==3.10.6
+seaborn==0.13.2
+plotly==6.3.0
+altair==5.5.0
+joblib==1.5.2
+python-dateutil==2.9.0.post0
+pytz==2025.2
+openpyxl==3.1.5
+XlsxWriter==3.2.8
+reportlab==4.4.3
+streamlit-option-menu==0.4.0
+streamlit-aggrid==1.1.8.post1
+streamlit-plotly-events==0.0.6
+streamlit-lottie==0.0.5
+streamlit-metrics==0.1.0
+typing-extensions==4.15.0
