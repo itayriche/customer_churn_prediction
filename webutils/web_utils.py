@@ -117,7 +117,7 @@ def get_model_list() -> List[str]:
 def set_page_config():
     """Set Streamlit page configuration."""
     st.set_page_config(
-        page_title="Customer Churn Prediction",
+        page_title="Churn Flow",
         page_icon="🎯",
         layout="wide",
         initial_sidebar_state="expanded",

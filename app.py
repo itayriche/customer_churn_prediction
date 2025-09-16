@@ -44,7 +44,7 @@ def main():
     
     # Sidebar for navigation and model selection
     with st.sidebar:
-        st.title("🎯 Churn Predictor")
+        st.title("🎯 Churn Flow")
         st.markdown("---")
         
         # Model selection
@@ -80,6 +80,8 @@ def main():
         """)
     
     # Main content area
+    st.title("churnflow")
+    st.write("Welcome to churnflow – Visualizing and understanding churn patterns.")
     st.title("🏠 Customer Churn Prediction Dashboard")
     
     col1, col2, col3 = st.columns(3)
