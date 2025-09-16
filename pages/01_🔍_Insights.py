@@ -103,8 +103,10 @@ def create_categorical_churn_analysis():
     # Calculate churn rates for each categorical feature
     churn_rates = {}
 
+    #lets drop some features to fit the plot better
+    CATEGORICAL_FEATURES_DROPPED = ['gender', 'SeniorCitizen', 'PhoneService', 'MultipleLines']
     for feature in CATEGORICAL_FEATURES[:18]:  # Show first 18 features
-        if feature in df.columns:
+        if feature in df.columns and feature not in CATEGORICAL_FEATURES_DROPPED:
             churn_rate = df.groupby(feature)['Churn'].apply(
                 lambda x: (x == 'Yes').sum() / len(x) * 100
             ).sort_values(ascending=False)
