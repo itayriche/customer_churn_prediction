@@ -130,10 +130,10 @@ def main():
 
     ### 📈 Key Features
     
+    - **Interactive Visualizations** for data exploration
     - **Real-time Predictions** with confidence scores
     - **Risk Assessment** with color-coded results  
     - **Model Explainability** using SHAP values
-    - **Interactive Visualizations** for data exploration
     - **Business Impact Analysis** with revenue calculations
     - **Professional Export** options for results
     """)

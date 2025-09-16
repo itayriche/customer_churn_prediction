@@ -262,11 +262,11 @@ def create_probability_gauge(probability: float) -> go.Figure:
     category, color, _ = get_risk_category(probability)
     
     fig = go.Figure(go.Indicator(
-        mode = "gauge+number+delta",
+        mode = "gauge+number",
         value = probability * 100,
         domain = {'x': [0, 1], 'y': [0, 1]},
         title = {'text': "Churn Probability"},
-        delta = {'reference': 50},
+        #delta = {'reference': 50},
         gauge = {
             'axis': {'range': [None, 100]},
             'bar': {'color': color},
