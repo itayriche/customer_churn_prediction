@@ -80,9 +80,9 @@ def main():
         """)
     
     # Main content area
-    st.title("churnflow")
-    st.write("Welcome to churnflow – Visualizing and understanding churn patterns.")
-    st.title("🏠 Customer Churn Prediction Dashboard")
+    st.title("Churn Flow Application 🏠")
+    st.markdown("---")
+    st.title("Customer Churn Prediction Dashboard")
     
     col1, col2, col3 = st.columns(3)
     
