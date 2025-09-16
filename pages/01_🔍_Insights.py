@@ -116,7 +116,7 @@ def create_categorical_churn_analysis():
     fig = make_subplots(
         rows=6, cols=3,
         subplot_titles=list(churn_rates.keys()),
-        specs=[[{"type": "bar"}] * 3] * 6
+        specs=[[{"type": "bar"}] * 3] * 4
     )
     
     colors = px.colors.qualitative.Set3
