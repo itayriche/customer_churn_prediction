@@ -401,12 +401,36 @@ def main():
         st.write("• New customers (0-12 months) with high charges are at highest risk")
         st.write("• Long-term customers (48+ months) show lower churn rates")
         st.write("• Medium charge customers are most stable")
-    
+
+    with col1:
+        # Add Histogram of Tenure by Churn
+        
+        fig = px.histogram(
+            df, 
+            x='tenure', 
+            color='Churn', 
+            barmode='overlay', 
+            title='Tenure Distribution by Churn',
+            labels={'tenure': 'Tenure', 'Churn': 'Churn Status'},
+            color_discrete_map={'No': 'blue', 'Yes': 'red'}  # Custom colors
+        )
+        fig.update_layout(
+            xaxis_title="Tenure",
+            yaxis_title="Count",
+            legend_title="Churn Status",
+            height=500,
+            width=700
+        )
+        
+        # Display the histogram in the Streamlit app
+        st.plotly_chart(fig)
+
     # Business impact analysis
     st.subheader("💼 Business Impact Analysis")
     
     col1, col2 = st.columns(2)
     
+
     with col1:
         st.info(f"""
         **Customer Lifetime Value:**
