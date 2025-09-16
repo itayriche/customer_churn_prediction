@@ -102,8 +102,8 @@ def create_categorical_churn_analysis():
     
     # Calculate churn rates for each categorical feature
     churn_rates = {}
-    
-    for feature in CATEGORICAL_FEATURES[:6]:  # Show first 6 features
+
+    for feature in CATEGORICAL_FEATURES[:18]:  # Show first 18 features
         if feature in df.columns:
             churn_rate = df.groupby(feature)['Churn'].apply(
                 lambda x: (x == 'Yes').sum() / len(x) * 100
@@ -112,9 +112,9 @@ def create_categorical_churn_analysis():
     
     # Create subplots
     fig = make_subplots(
-        rows=2, cols=3,
+        rows=6, cols=3,
         subplot_titles=list(churn_rates.keys()),
-        specs=[[{"type": "bar"}] * 3] * 2
+        specs=[[{"type": "bar"}] * 3] * 6
     )
     
     colors = px.colors.qualitative.Set3
