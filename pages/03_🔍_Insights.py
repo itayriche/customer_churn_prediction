@@ -354,6 +354,36 @@ def main():
         for feature, corr_value in top_15_correlations.items():
             st.write(f"{feature}: {corr_value:.2f}")
     
+    with col1:
+
+        # Correlation of all features with Churn_Yes
+        
+        # One-hot encode categorical features
+        encoded_df = pd.get_dummies(df, drop_first=True)
+        
+        # Calculate correlation with 'Churn_Yes'
+        churn_correlation = encoded_df.corr()['Churn_Yes'].sort_values(ascending=False)
+        
+        # Create a bar plot for visualization
+        churn_corr_fig = px.bar(
+            churn_correlation.drop('Churn_Yes'),
+            title="Correlation of Features with Churn (Churn_Yes)",
+            labels={
+                "index": "Features",
+                "value": "Correlation Coefficient"
+            },
+            color=churn_correlation.drop('Churn_Yes').values,
+            color_continuous_scale="Blues"
+        )
+        churn_corr_fig.update_layout(
+            xaxis_title="Features",
+            yaxis_title="Correlation Coefficient",
+            xaxis_tickangle=90,
+            height=500,
+            width=800
+        )
+        st.plotly_chart(churn_corr_fig)
+
     # Categorical analysis
     st.subheader("🏷️ Categorical Feature Analysis")
     
