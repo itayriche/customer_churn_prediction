@@ -60,11 +60,11 @@ def main():
         st.markdown("### 📊 Navigation")
         st.markdown("""
         Use the pages in the sidebar to:
-        - **🎯 Prediction**: Make individual predictions
+        - **🔍 Insights**: Explore data patterns 
         - **📊 Performance**: View model metrics
-        - **🔍 Insights**: Explore data patterns  
-        - **📁 Batch**: Upload CSV for bulk predictions
         - **⚖️ Compare**: Compare different models
+        - **🎯 Prediction**: Make individual predictions
+        - **📁 Batch**: Upload CSV for bulk predictions
         """)
         
         st.markdown("---")
@@ -122,13 +122,12 @@ def main():
     This comprehensive dashboard helps you predict and analyze customer churn using advanced machine learning models.
     
     ### 🚀 Getting Started
-    
-    1. **🎯 Make a Prediction**: Navigate to the Prediction page to input customer data and get instant churn probability
-    2. **📊 View Performance**: Check model accuracy and performance metrics on the Performance page  
-    3. **🔍 Explore Insights**: Discover patterns in customer data and feature importance
-    4. **📁 Batch Processing**: Upload CSV files for bulk predictions
-    5. **⚖️ Compare Models**: Evaluate different algorithms side by side
-    
+    1. **🔍 Explore Insights**: Discover patterns in customer data and feature importance
+    2. **📊 View Performance**: Check model accuracy and performance metrics on the Performance page
+    3. **⚖️ Compare Models**: Evaluate different algorithms side by side
+    4. **🎯 Make a Prediction**: Navigate to the Prediction page to input customer data and get instant churn probability
+    5. **📁 Batch Processing**: Upload CSV files for bulk predictions
+
     ### 📈 Key Features
     
     - **Real-time Predictions** with confidence scores
