@@ -280,7 +280,7 @@ def display_prediction_explanation(explanation):
         st.subheader("📊 Top Contributing Factors")
         
         for feat_exp in explanation['feature_explanations'][:5]:
-            col1, col2 = st.columns([3, 1])
+            col1, col2 = st.columns([1, 1])
             with col1:
                 st.write(f"• {feat_exp['explanation']}")
             with col2:
