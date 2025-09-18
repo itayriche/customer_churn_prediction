@@ -616,7 +616,7 @@ class SimpleInterpreter:
                         
                         # Create human-readable explanation
                         explanation_text = self._create_feature_explanation(
-                            feature_name, feature_value, importance, customer_data
+                            feature_name, feature_value, importance, customer_data, prediction
                         )
                         
                         feature_explanations.append({
@@ -685,10 +685,10 @@ class SimpleInterpreter:
             return None
         except:
             return None
-    
-    def _create_feature_explanation(self, feature_name, feature_value, importance, customer_data):
+
+    def _create_feature_explanation(self, feature_name, feature_value, importance, customer_data, prediction):
         """Create human-readable explanation for a feature."""
-        impact = "increases" if importance > 0 else "decreases"
+        impact = "increases" if prediction else "decreases"
         strength = "strongly" if abs(importance) > 0.1 else "moderately"
         
         # Map technical feature names to readable names

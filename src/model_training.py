@@ -21,6 +21,15 @@ except ImportError:
     XGBClassifier = None
     print("Warning: XGBoost not available. Install with: pip install xgboost")
 
+# Import TensorFlow and Keras layers for neural network models
+try:
+    import tensorflow as tf
+    from tensorflow.keras import layers
+except ImportError:
+    tf = None
+    layers = None
+    print("Warning: TensorFlow not available. Install with: pip install tensorflow")
+
 from .config import MODELS_CONFIG, RANDOM_STATE, CV_FOLDS, PRIMARY_METRIC, MODEL_SAVE_PATH
 
 class ModelTrainer:
@@ -81,7 +90,7 @@ class ModelTrainer:
         # Add neural network if requested
         if include_neural_network:
             try:
-                self.models['neural_network'] = MLPClassifier(
+                self.models['MLP_network'] = MLPClassifier(
                     hidden_layer_sizes=(32, 16, 8, 1),
                     max_iter=1000,
                     early_stopping=True,
@@ -90,7 +99,16 @@ class ModelTrainer:
                     learning_rate_init=0.1,
                     random_state=RANDOM_STATE
                 )
-                print("Initialized neural_network")
+                print("Initialized MLP_network")
+
+                self.models['neural_network'] = tf.keras.Sequential([
+                    layers.InputLayer(input_shape=(self.preprocessor.transformers_[0][1].shape[1] +
+                                                   self.preprocessor.transformers_[1][1].shape[1],)),
+                    layers.Dense(16, activation='relu'),
+                    layers.Dropout(0.3),
+                    layers.Dense(8, activation='relu'),
+                    layers.Dense(1, activation='sigmoid')
+                ])
             except Exception as e:
                 print(f"Could not initialize neural network: {e}")
     
