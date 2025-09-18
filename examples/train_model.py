@@ -98,7 +98,7 @@ def run_complete_pipeline(perform_tuning: bool = True, save_models: bool = True)
         
         # Initialize trainer
         trainer = ModelTrainer(preprocessor)
-        trainer.initialize_models(include_neural_network=True)
+        trainer.initialize_models(include_neural_network=True, input_size=30)
         
         print(f"Initialized {len(trainer.models)} models:")
         for name in trainer.models.keys():

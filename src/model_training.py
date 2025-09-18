@@ -21,14 +21,13 @@ except ImportError:
     XGBClassifier = None
     print("Warning: XGBoost not available. Install with: pip install xgboost")
 
-# Import TensorFlow and Keras layers for neural network models
+# Import scikeras.wrappers and Keras layers for neural network models
 try:
-    import tensorflow as tf
+    from scikeras.wrappers import KerasClassifier
     from tensorflow.keras import layers
 except ImportError:
-    tf = None
-    layers = None
-    print("Warning: TensorFlow not available. Install with: pip install tensorflow")
+    KerasClassifier = None
+    print("Warning: scikeras or tensorflow not available. Install with: pip install scikeras tensorflow")
 
 from .config import MODELS_CONFIG, RANDOM_STATE, CV_FOLDS, PRIMARY_METRIC, MODEL_SAVE_PATH
 
@@ -70,7 +69,7 @@ class ModelTrainer:
         
         return model_class
     
-    def initialize_models(self, include_neural_network: bool = True) -> None:
+    def initialize_models(self, input_size, include_neural_network: bool = True) -> None:
         """
         Initialize all models with default parameters.
         
@@ -101,14 +100,6 @@ class ModelTrainer:
                 )
                 print("Initialized MLP_network")
 
-                self.models['neural_network'] = tf.keras.Sequential([
-                    layers.InputLayer(input_shape=(self.preprocessor.transformers_[0][1].shape[1] +
-                                                   self.preprocessor.transformers_[1][1].shape[1],)),
-                    layers.Dense(16, activation='relu'),
-                    layers.Dropout(0.3),
-                    layers.Dense(8, activation='relu'),
-                    layers.Dense(1, activation='sigmoid')
-                ])
             except Exception as e:
                 print(f"Could not initialize neural network: {e}")
     
