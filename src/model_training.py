@@ -82,12 +82,12 @@ class ModelTrainer:
         if include_neural_network:
             try:
                 self.models['neural_network'] = MLPClassifier(
-                    hidden_layer_sizes=(32, 16, 8, 2, 1),
+                    hidden_layer_sizes=(32, 16, 8, 1),
                     max_iter=1000,
                     early_stopping=True,
                     validation_fraction=0.1,
                     n_iter_no_change=20,
-                    learning_rate='adaptive',
+                    learning_rate_init=0.1,
                     random_state=RANDOM_STATE
                 )
                 print("Initialized neural_network")
