@@ -21,14 +21,6 @@ except ImportError:
     XGBClassifier = None
     print("Warning: XGBoost not available. Install with: pip install xgboost")
 
-# Import scikeras.wrappers and Keras layers for neural network models
-try:
-    from scikeras.wrappers import KerasClassifier
-    from tensorflow.keras import layers
-except ImportError:
-    KerasClassifier = None
-    print("Warning: scikeras or tensorflow not available. Install with: pip install scikeras tensorflow")
-
 from .config import MODELS_CONFIG, RANDOM_STATE, CV_FOLDS, PRIMARY_METRIC, MODEL_SAVE_PATH
 
 class ModelTrainer:
