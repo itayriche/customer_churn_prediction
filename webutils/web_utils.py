@@ -22,6 +22,8 @@ import plotly.express as px
 from datetime import datetime
 import base64
 
+from src.config import PROBABILITY_THRESHOLD
+
 """
 Web utility functions for the Streamlit Customer Churn Prediction app.
 
@@ -581,7 +583,7 @@ class SimpleInterpreter:
             # Get prediction
             prediction = model.predict(df)[0]
             prediction_proba = model.predict_proba(df)[0]
-            
+
             # Get feature importance based on model type
             feature_importance = self._get_feature_importance(model, model_name)
             

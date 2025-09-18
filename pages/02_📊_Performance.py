@@ -241,7 +241,7 @@ def create_cv_scores_plot(results):
 def display_feature_importance(model_name, model):
     """Display feature importance for tree-based and linear models."""
     try:
-        # Extract the classifier from pipeline
+        # Extract the classifier from the pipeline
         if hasattr(model, 'named_steps') and 'classifier' in model.named_steps:
             classifier = model.named_steps['classifier']
             preprocessor = model.named_steps['preprocessor']
@@ -259,25 +259,31 @@ def display_feature_importance(model_name, model):
             # Add numerical features
             feature_names.extend(NUMERICAL_FEATURES)
             
-            # Get importance values based on model type
+            # Improved logic to get importance values
             importance_values = None
             chart_title = f"Feature Importance - {model_name.replace('_', ' ').title()}"
+
+            try:
+                if hasattr(classifier, 'feature_importances_'):
+                    # Tree-based models (Random Forest, Gradient Boosting, etc.)
+                    importance_values = classifier.feature_importances_
+                elif hasattr(classifier, 'coef_'):
+                    # Linear models (Logistic Regression, SVM with linear kernel)
+                    # Use absolute values of coefficients as importance
+                    coef = classifier.coef_
+                    if coef.ndim > 1:
+                        # Multi-class or multi-output
+                        importance_values = np.abs(coef[0])  # Use first class for binary classification
+                    else:
+                        importance_values = np.abs(coef)
+                    chart_title = f"Feature Coefficients (Absolute) - {model_name.replace('_', ' ').title()}"
+                elif hasattr(model, 'feature_importances_'):
+                    # Check if the pipeline itself has feature importances (edge case)
+                    importance_values = model.feature_importances_
+            except Exception as e:
+                st.warning(f"Failed to extract feature importance: {e}")
             
-            if hasattr(classifier, 'feature_importances_'):
-                # Tree-based models (Random Forest, Gradient Boosting, etc.)
-                importance_values = classifier.feature_importances_
-                
-            elif hasattr(classifier, 'coef_'):
-                # Linear models (Logistic Regression, SVM with linear kernel)
-                # Use absolute values of coefficients as importance
-                coef = classifier.coef_
-                if coef.ndim > 1:
-                    # Multi-class or multi-output
-                    importance_values = np.abs(coef[0])  # Use first class for binary classification
-                else:
-                    importance_values = np.abs(coef)
-                chart_title = f"Feature Coefficients (Absolute) - {model_name.replace('_', ' ').title()}"
-            
+            # Visualize feature importance
             if importance_values is not None:
                 if len(feature_names) == len(importance_values):
                     fig = create_feature_importance_chart(
@@ -286,7 +292,7 @@ def display_feature_importance(model_name, model):
                         chart_title
                     )
                     st.plotly_chart(fig, use_container_width=True)
-                    
+
                     # Display additional information
                     if hasattr(classifier, 'feature_importances_'):
                         st.info("📊 **Tree-based Model**: Values represent feature importance scores (higher = more important)")
@@ -295,11 +301,11 @@ def display_feature_importance(model_name, model):
                 else:
                     st.warning(f"Feature dimension mismatch: {len(feature_names)} feature names vs {len(importance_values)} importance values")
             else:
-                # Models without interpretable feature importance (e.g., SVM with RBF kernel)
+                # Models without interpretable feature importance
                 model_type = type(classifier).__name__
-                st.info(f"📊 Feature importance visualization is not available for {model_type}. Consider using tree-based models (Random Forest, Gradient Boosting) or linear models (Logistic Regression) for interpretable feature importance.")
+                st.info(f"📊 Feature importance visualization is not available for {model_type}. Consider using tree-based or linear models for interpretability.")
         else:
-            st.info("Feature importance not available - model is not a pipeline with classifier component")
+            st.info("Feature importance not available - model is not a pipeline with a classifier component")
             
     except Exception as e:
         st.error(f"Error displaying feature importance: {str(e)}")
